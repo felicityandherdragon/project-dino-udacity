@@ -1,0 +1,25 @@
+{
+  "name": "project-dino",
+  "version": "1.0.0",
+  "description": "infographic about dinosaurs!",
+  "scripts": {
+    "start:dev": "nodemon server -e html,js,scss"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felicityandherdragon/project-dino.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/felicityandherdragon/project-dino/issues"
+  },
+  "homepage": "https://github.com/felicityandherdragon/project-dino#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
