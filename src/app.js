@@ -14,7 +14,6 @@ async function fetchDinos(url) {
   try {
     const res = await fetch(url);
     const { Dinos } = await res.json();
-    console.log('dinos', Dinos);
     return Dinos;
   } catch (err) {
     console.log(err);
@@ -75,12 +74,18 @@ dinoConstructor.prototype.compareDiet = function (humanDiet) {
 
 /**
  * @description create array with dino objects and human object in the right order
- * @param {object} dinoData object with all the dino objects
- * @param {object} humanData object with the human object
+ * @param {array} dinoData array with all the single dino objects with raw info
+ * @param {object} humanObj object with the human object
  * @returns array with dino and human objects
  */
-function generateSpeciesArray(dinoData, humanData) {
-    
+function generateSpeciesArray(dinoData, humanObj) {
+    const combinedArray = [];
+    dinoData.forEach((eachDino) => {
+        const currDino = new dinoConstructor(eachDino);
+        combinedArray.push(currDino);
+    })
+    combinedArray.splice(4, 0, humanObj);
+    return combinedArray;
 }
 
 /**
@@ -114,8 +119,8 @@ function generateTiles() {
 dinoForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const humanInfo = getHumanData(e.target);
-  console.log('humanInfo', humanInfo);
   dinoForm.setAttribute('hidden', 'true');
   const dinos = await fetchDinos('/api/dinos');
-  console.log(dinos);
+  const speciesArray = generateSpeciesArray(dinos, humanInfo);
+  console.log(speciesArray);
 });
