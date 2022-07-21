@@ -1,14 +1,13 @@
 /**
  * All the selectors
  */
-// const submitButton = document.getElementById('btn');
 const dinoGrid = document.getElementById('grid');
 const dinoForm = document.querySelector('form');
 
 /**
  * @description Dino constructor
  * @constructor
- * @param {Object} dino object with all the raw dino data
+ * @param {object} dino object with all the raw dino data
  */
 function dinoConstructor(dino) {
   this.species = dino.species;
@@ -20,7 +19,11 @@ function dinoConstructor(dino) {
   this.fact = dino.fact;
 }
 
-/* Compare weight method*/
+/**
+ * @description Method on dino object to compare human weight with dino weight
+ * @param {number} humanWeight with user input weight
+ * @returns a string with the comparison result
+ */
 dinoConstructor.prototype.compareWeight = function (humanWeight) {
   const ratio = (this.weight / humanWeight).toFixed(1);
   if (ratio > 1) {
@@ -34,7 +37,11 @@ dinoConstructor.prototype.compareWeight = function (humanWeight) {
   }
 };
 
-/* Compare height method*/
+/**
+ * @description Method on dino object to compare human height with dino height
+ * @param {number} humanHeight with user input weight
+ * @returns a string with the comparison result
+ */
 dinoConstructor.prototype.compareHeight = function (humanHeight) {
   const ratio = (this.height / humanHeight).toFixed(1);
   if (ratio > 1) {
@@ -48,7 +55,11 @@ dinoConstructor.prototype.compareHeight = function (humanHeight) {
   }
 };
 
-/* Compare diet method*/
+/**
+ * @description Method on dino object to compare human diet with dino diet
+ * @param {string} humanDiet with user input diet
+ * @returns a string with the comparison result
+ */
 dinoConstructor.prototype.compareDiet = function (humanDiet) {
   if (this.diet === humanDiet) {
     return `${this.species} enjoys the same diet as you!`;
@@ -92,11 +103,12 @@ function getHumanData(formData) {
 }
 
 /**
- * @description generate the individual dino tile with dino data
+ * @description generates random fact
  * @param {object} dino a single dino object
- * @returns the tile element for a single dino
+ * @param {object} human a single human object
+ * @returns returns a random fact for the dino tile
  */
-function generateDinoTile(dino, human) {
+function generateRandomFact(dino, human) {
   let randomizedFact;
   const randomNumber =
     dino.species === 'Pigeon' ? 4 : Math.round(Math.random() * 6);
@@ -124,18 +136,29 @@ function generateDinoTile(dino, human) {
       randomizedFact = 'Hmmm I am running out of dinosaur facts here ;p';
   }
 
+  return randomizedFact;
+}
+
+/**
+ * @description generate the individual dino tile with dino data
+ * @param {object} dino a single dino object
+ * @param {object} human a single human object
+ * @returns the tile element for a single dino
+ */
+function generateDinoTile(dino, human) {
+  let fact = generateRandomFact(dino, human);
+
   const tileDiv = document.createElement('div');
   tileDiv.classList.add('grid-item');
-  tileDiv.name = dino.species;
+  tileDiv.id = dino.species;
+  tileDiv.addEventListener('click', refreshFact);
 
   const tileHeader = document.createElement('h3');
   tileHeader.textContent = dino.species;
   const tileImage = document.createElement('img');
   tileImage.src = `./images/${dino.species.toLowerCase()}.png`;
   const tileFact = document.createElement('p');
-  tileFact.textContent = randomizedFact;
-  // TODO: might want to remove this event listener
-  tileFact.addEventListener('click', refreshFact);
+  tileFact.textContent = fact;
 
   tileDiv.append(tileHeader, tileImage, tileFact);
 
@@ -155,8 +178,11 @@ function generateHumanTile(human) {
   tileHeader.textContent = human.name;
   const tileImage = document.createElement('img');
   tileImage.src = './images/human.png';
+  const tileCTA = document.createElement('p');
+  tileCTA.textContent = 'Reset the infographic';
 
-  tileDiv.append(tileHeader, tileImage);
+  tileDiv.append(tileHeader, tileImage, tileCTA);
+  tileDiv.addEventListener('click', resetForm);
 
   return tileDiv;
 }
@@ -194,23 +220,60 @@ async function fetchDinos(url) {
   }
 }
 
-/* function to handle data fetching and UI update */
-async function showGrid(e) {
+/* function to fetch dino objects and collect human info from user input, called when form is submitted */
+async function gatherData(e) {
   e.preventDefault();
   const humanInfo = getHumanData(e.target);
+  localStorage.setItem('humanInfo', JSON.stringify(humanInfo));
   const dinos = await fetchDinos('/api/dinos');
+  localStorage.setItem('dinos', JSON.stringify(dinos));
+  return { humanInfo, dinos };
+}
 
+/* hide the form and put together the grid */
+function showGrid(dinos, humanInfo) {
   dinoForm.setAttribute('hidden', 'true');
   const speciesArray = generateSpeciesArray(dinos, humanInfo);
   generateGrid(speciesArray);
 }
 
-// TODO: unfinished
-function refreshFact(e) {
-  console.log(e.target);
+/* called when window gets loaded, make use of existing dino and human info if they are in localStorage */
+async function windowLoaded() {
+  if (localStorage?.getItem('humanInfo')) {
+    const humanInfo = JSON.parse(localStorage.getItem('humanInfo'));
+    const dinos = JSON.parse(localStorage.getItem('dinos'));
+    showGrid(dinos, humanInfo);
+  } else {
+    return;
+  }
 }
 
-/* event listener on form submit */
-dinoForm.addEventListener('submit', showGrid);
-// NOTE: might still want to use this
-// dinoGrid.addEventListener('click', refreshFact);
+/* called when form is submitted */
+async function formSubmitted(e) {
+  const { humanInfo, dinos } = await gatherData(e);
+  showGrid(dinos, humanInfo);
+}
+
+/* called when dino tile is clicked on, shows another random fact */
+function refreshFact() {
+  const tileToRefresh = document.getElementById(this.id);
+  const tileFactToRefresh = tileToRefresh.querySelector('p');
+  const humanInfo = JSON.parse(localStorage.getItem('humanInfo'));
+  const dinos = JSON.parse(localStorage.getItem('dinos'));
+  const dino = new dinoConstructor(
+    dinos.find((each) => each.species === this.id)
+  );
+  let newFact = generateRandomFact(dino, humanInfo);
+  tileFactToRefresh.textContent = newFact;
+}
+
+/* called when human tile is clicked on, clears localStorage and shows the form again */
+function resetForm() {
+  localStorage.clear();
+  dinoForm.setAttribute('hidden', 'false');
+  document.location.reload();
+}
+
+/* event listeners on form submit and page load*/
+dinoForm.addEventListener('submit', formSubmitted);
+window.addEventListener('load', windowLoaded);

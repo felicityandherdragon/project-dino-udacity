@@ -49,6 +49,7 @@ p {
     position: relative;
     box-sizing: border-box;
     width: 100%;
+    cursor: pointer;
 }
 
 .grid-item:nth-child(1){

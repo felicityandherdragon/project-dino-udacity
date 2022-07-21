@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "infographic about dinosaurs!",
   "scripts": {
-    "start:dev": "nodemon server -e html,js,scss"
+    "start:dev": "nodemon server -e html,js,scss",
+    "format": "prettier --write \"**/*.js\"",
+    "lint": "eslint \"**/*.js\" --quiet"
   },
   "repository": {
     "type": "git",
@@ -20,6 +22,9 @@
     "express": "^4.18.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1"
   }
 }
