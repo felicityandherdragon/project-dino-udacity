@@ -114,6 +114,8 @@ p {
     font-size: 1.2em;
     font-weight: 600;
     color: #fff;
+    height: 75px;
+    overflow: scroll;
 }
 
 /* Form Styles */
@@ -159,6 +161,7 @@ select {
     padding: 0.8em;
     margin: 1.2em auto;
     transition: ease 0.3s all;
+    border: 0;
 }
 
 #btn:hover {
