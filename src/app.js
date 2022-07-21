@@ -91,12 +91,8 @@ function getHumanData(formData) {
   };
 }
 
-/**
- * @description generate the individual dino tile with dino data
- * @param {object} dino a single dino object
- * @returns the tile element for a single dino
- */
-function generateDinoTile(dino, human) {
+
+function generateRandomFact(dino, human) {
   let randomizedFact;
   const randomNumber =
     dino.species === 'Pigeon' ? 4 : Math.round(Math.random() * 6);
@@ -124,18 +120,29 @@ function generateDinoTile(dino, human) {
       randomizedFact = 'Hmmm I am running out of dinosaur facts here ;p';
   }
 
+  return randomizedFact;
+}
+
+/**
+ * @description generate the individual dino tile with dino data
+ * @param {object} dino a single dino object
+ * @returns the tile element for a single dino
+ */
+function generateDinoTile(dino, human) {
+  let fact = generateRandomFact(dino, human);
+
   const tileDiv = document.createElement('div');
   tileDiv.classList.add('grid-item');
-  tileDiv.name = dino.species;
+  tileDiv.id = dino.species;
+  // TODO: might want to remove this event listener
+  tileDiv.addEventListener('click', refreshFact);
 
   const tileHeader = document.createElement('h3');
   tileHeader.textContent = dino.species;
   const tileImage = document.createElement('img');
   tileImage.src = `./images/${dino.species.toLowerCase()}.png`;
   const tileFact = document.createElement('p');
-  tileFact.textContent = randomizedFact;
-  // TODO: might want to remove this event listener
-  tileFact.addEventListener('click', refreshFact);
+  tileFact.textContent = fact;
 
   tileDiv.append(tileHeader, tileImage, tileFact);
 
@@ -195,22 +202,50 @@ async function fetchDinos(url) {
 }
 
 /* function to handle data fetching and UI update */
-async function showGrid(e) {
-  e.preventDefault();
-  const humanInfo = getHumanData(e.target);
-  const dinos = await fetchDinos('/api/dinos');
-
+function showGrid(dinos, humanInfo) {
   dinoForm.setAttribute('hidden', 'true');
   const speciesArray = generateSpeciesArray(dinos, humanInfo);
   generateGrid(speciesArray);
 }
 
+async function windowLoaded(e) {
+  if (localStorage?.getItem('humanInfo')) {
+    const humanInfo = JSON.parse(localStorage.getItem('humanInfo'));
+    const dinos = JSON.parse(localStorage.getItem('dinos'));
+    showGrid(dinos, humanInfo);
+  } else {
+    return;
+  }
+}
+
+async function gatherData(e) {
+  e.preventDefault();
+  const humanInfo = getHumanData(e.target);
+  localStorage.setItem('humanInfo', JSON.stringify(humanInfo));
+  const dinos = await fetchDinos('/api/dinos');
+  localStorage.setItem('dinos', JSON.stringify(dinos));
+  return {humanInfo, dinos};
+}
+
+async function formSubmitted(e) {
+  const { humanInfo, dinos } = await gatherData(e);
+  showGrid(dinos, humanInfo);
+}
+
 // TODO: unfinished
-function refreshFact(e) {
-  console.log(e.target);
+function refreshFact() {
+  const tileToRefresh = document.getElementById(this.id);
+  const tileFactToRefresh = tileToRefresh.querySelector('p');
+  const humanInfo = JSON.parse(localStorage.getItem('humanInfo'));
+  const dinos = JSON.parse(localStorage.getItem('dinos'));
+  const dino = new dinoConstructor(dinos.find(each => each.species === this.id));
+  let newFact = generateRandomFact(dino, humanInfo)
+  tileFactToRefresh.textContent = newFact;
 }
 
 /* event listener on form submit */
-dinoForm.addEventListener('submit', showGrid);
+dinoForm.addEventListener('submit', formSubmitted);
 // NOTE: might still want to use this
 // dinoGrid.addEventListener('click', refreshFact);
+//TODO: use this coupled with local storage / cookie to persist the graph?
+window.addEventListener('load', windowLoaded);
