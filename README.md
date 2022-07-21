@@ -14,4 +14,4 @@ npm run start:dev
 ```
 
 ## Preview
-![preview image](./src/images/dino-preview.jpg)
+![preview image](https://raw.githubusercontent.com/felicityandherdragon/project-dino-udacity/main/src/images/dino-preview.png)
