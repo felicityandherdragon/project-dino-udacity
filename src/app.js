@@ -1,6 +1,7 @@
 /**
  * All the selectors
  */
+const compareBtn = document.getElementById('btn');
 const dinoGrid = document.getElementById('grid');
 const dinoForm = document.querySelector('form');
 
@@ -223,7 +224,7 @@ async function fetchDinos(url) {
 /* function to fetch dino objects and collect human info from user input, called when form is submitted */
 async function gatherData(e) {
   e.preventDefault();
-  const humanInfo = getHumanData(e.target);
+  const humanInfo = getHumanData(dinoForm);
   localStorage.setItem('humanInfo', JSON.stringify(humanInfo));
   const dinos = await fetchDinos('/api/dinos');
   localStorage.setItem('dinos', JSON.stringify(dinos));
@@ -275,5 +276,5 @@ function resetForm() {
 }
 
 /* event listeners on form submit and page load*/
-dinoForm.addEventListener('submit', formSubmitted);
+compareBtn.addEventListener('click', formSubmitted);
 window.addEventListener('load', windowLoaded);
